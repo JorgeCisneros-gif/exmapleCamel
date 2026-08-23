@@ -1,0 +1,63 @@
+camel:
+  main:
+    jmx-enabled: true
+  component:
+    activemq6:
+      deserialization-filter: "!java.net.**;java.**;javax.**;org.apache.camel.**;com.javacamel.exmapleCamel.beans.**;!*"
+    spring-redis:
+      enabled: true
+
+  springboot:
+    main-run-controller: true
+
+spring:
+  application:
+    name: exmapleCamel
+  # Necesario para que Hawtio pueda ver los MBeans de Camel (rutas, contadores, etc.)
+  jmx:
+    enabled: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/camel_db
+    username: camel
+    password: camel123
+ # activemq:
+  #  broker-url: tcp://localhost:61616
+  #  user: admin
+  #  password: admin
+  #  packages:
+      #trust-all: true
+  #    trusted: com.javacamel.exmapleCamel.beans
+  # NOTA: este bloque jpa estaba mal indentado (quedaba anidado bajo "redis",
+  # no bajo "spring") y por eso la config de Hibernate no se aplicaba. Se corrige aquí.
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+redis:
+  host: localhost
+  port: 6379
+
+# Expone los endpoints "hawtio" y "jolokia" (JMX sobre HTTP) que usa la consola Hawtio.
+# Puerto dedicado (8081) para separar Actuator/Hawtio del puerto principal de la app (8080)
+# y del REST de Camel (8084). Cambia este valor al puerto que prefieras.
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: hawtio,jolokia,health,info
+
+# Desactivado solo para desarrollo local (no hay spring-security en el classpath).
+# Si se despliega en un entorno compartido, añadir io.hawt:hawtio-springboot4-security
+# y quitar/activar esta línea para exigir login.
+hawtio:
+  authenticationEnabled: false
