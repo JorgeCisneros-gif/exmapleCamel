@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OrderService.wsdl
+
+    Contrato SOAP FICTICIO, con fines exclusivamente educativos, para practicar
+    cómo Apache Camel (camel-cxf / cxf-endpoint) consume o expone un servicio SOAP.
+    No corresponde a ningún servicio real desplegado; la dirección del <soap:address>
+    es un placeholder.
+
+    Estilo: document/literal wrapped (el estándar generado por Apache CXF).
+    SOAP: 1.1.
+-->
+<definitions name="OrderService"
+             targetNamespace="http://camel.javacamel.com/orders"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://camel.javacamel.com/orders"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+    <!-- ==================== TYPES ==================== -->
+    <types>
+        <xsd:schema targetNamespace="http://camel.javacamel.com/orders"
+                    xmlns:tns="http://camel.javacamel.com/orders"
+                    elementFormDefault="qualified">
+
+            <!-- Tipo de dominio compartido por consultarOrden / actualizarOrden / listarOrdenesPorCliente -->
+            <xsd:complexType name="Orden">
+                <xsd:sequence>
+                    <xsd:element name="numeroOrden" type="xsd:string"/>
+                    <xsd:element name="cliente" type="xsd:string"/>
+                    <xsd:element name="producto" type="xsd:string"/>
+                    <xsd:element name="cantidad" type="xsd:int"/>
+                    <xsd:element name="precioUnitario" type="xsd:decimal"/>
+                    <xsd:element name="total" type="xsd:decimal"/>
+                    <xsd:element name="estado" type="tns:EstadoOrden"/>
+                    <xsd:element name="fechaCreacion" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:simpleType name="EstadoOrden">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="PENDIENTE"/>
+                    <xsd:enumeration value="PROCESADA"/>
+                    <xsd:enumeration value="CANCELADA"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+
+            <!-- ---------- crearOrden ---------- -->
+            <xsd:element name="crearOrdenRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cliente" type="xsd:string"/>
+                        <xsd:element name="producto" type="xsd:string"/>
+                        <xsd:element name="cantidad" type="xsd:int"/>
+                        <xsd:element name="precioUnitario" type="xsd:decimal"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="crearOrdenResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="numeroOrden" type="xsd:string"/>
+                        <xsd:element name="cliente" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- ---------- consultarOrden ---------- -->
+            <xsd:element name="consultarOrdenRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="numeroOrden" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="consultarOrdenResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="orden" type="tns:Orden"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- ---------- actualizarOrden ---------- -->
+            <xsd:element name="actualizarOrdenRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="numeroOrden" type="xsd:string"/>
+                        <!-- Campos opcionales: solo se actualiza lo que venga informado -->
+                        <xsd:element name="producto" type="xsd:string" minOccurs="0"/>
+                        <xsd:element name="cantidad" type="xsd:int" minOccurs="0"/>
+                        <xsd:element name="precioUnitario" type="xsd:decimal" minOccurs="0"/>
+                        <xsd:element name="estado" type="tns:EstadoOrden" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="actualizarOrdenResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="orden" type="tns:Orden"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- ---------- eliminarOrden ---------- -->
+            <xsd:element name="eliminarOrdenRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="numeroOrden" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="eliminarOrdenResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="numeroOrden" type="xsd:string"/>
+                        <xsd:element name="resultado" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- ---------- listarOrdenesPorCliente ---------- -->
+            <xsd:element name="listarOrdenesPorClienteRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cliente" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="listarOrdenesPorClienteResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="orden" type="tns:Orden" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- ---------- Fault compartido por todas las operaciones ---------- -->
+            <xsd:element name="OrdenFault">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="codigo" type="xsd:string"/>
+                        <xsd:element name="mensaje" type="xsd:string"/>
+                        <xsd:element name="numeroOrden" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </types>
+
+    <!-- ==================== MESSAGES ==================== -->
+    <message name="crearOrdenRequestMessage">
+        <part name="parameters" element="tns:crearOrdenRequest"/>
+    </message>
+    <message name="crearOrdenResponseMessage">
+        <part name="parameters" element="tns:crearOrdenResponse"/>
+    </message>
+
+    <message name="consultarOrdenRequestMessage">
+        <part name="parameters" element="tns:consultarOrdenRequest"/>
+    </message>
+    <message name="consultarOrdenResponseMessage">
+        <part name="parameters" element="tns:consultarOrdenResponse"/>
+    </message>
+
+    <message name="actualizarOrdenRequestMessage">
+        <part name="parameters" element="tns:actualizarOrdenRequest"/>
+    </message>
+    <message name="actualizarOrdenResponseMessage">
+        <part name="parameters" element="tns:actualizarOrdenResponse"/>
+    </message>
+
+    <message name="eliminarOrdenRequestMessage">
+        <part name="parameters" element="tns:eliminarOrdenRequest"/>
+    </message>
+    <message name="eliminarOrdenResponseMessage">
+        <part name="parameters" element="tns:eliminarOrdenResponse"/>
+    </message>
+
+    <message name="listarOrdenesPorClienteRequestMessage">
+        <part name="parameters" element="tns:listarOrdenesPorClienteRequest"/>
+    </message>
+    <message name="listarOrdenesPorClienteResponseMessage">
+        <part name="parameters" element="tns:listarOrdenesPorClienteResponse"/>
+    </message>
+
+    <message name="OrdenFaultMessage">
+        <part name="fault" element="tns:OrdenFault"/>
+    </message>
+
+    <!-- ==================== PORT TYPE ==================== -->
+    <portType name="OrderServicePortType">
+
+        <operation name="crearOrden">
+            <input message="tns:crearOrdenRequestMessage"/>
+            <output message="tns:crearOrdenResponseMessage"/>
+            <fault name="OrdenFault" message="tns:OrdenFaultMessage"/>
+        </operation>
+
+        <operation name="consultarOrden">
+            <input message="tns:consultarOrdenRequestMessage"/>
+            <output message="tns:consultarOrdenResponseMessage"/>
+            <fault name="OrdenFault" message="tns:OrdenFaultMessage"/>
+        </operation>
+
+        <operation name="actualizarOrden">
+            <input message="tns:actualizarOrdenRequestMessage"/>
+            <output message="tns:actualizarOrdenResponseMessage"/>
+            <fault name="OrdenFault" message="tns:OrdenFaultMessage"/>
+        </operation>
+
+        <operation name="eliminarOrden">
+            <input message="tns:eliminarOrdenRequestMessage"/>
+            <output message="tns:eliminarOrdenResponseMessage"/>
+            <fault name="OrdenFault" message="tns:OrdenFaultMessage"/>
+        </operation>
+
+        <operation name="listarOrdenesPorCliente">
+            <input message="tns:listarOrdenesPorClienteRequestMessage"/>
+            <output message="tns:listarOrdenesPorClienteResponseMessage"/>
+            <fault name="OrdenFault" message="tns:OrdenFaultMessage"/>
+        </operation>
+
+    </portType>
+
+    <!-- ==================== BINDING ==================== -->
+    <binding name="OrderServiceBinding" type="tns:OrderServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <operation name="crearOrden">
+            <soap:operation soapAction="http://camel.javacamel.com/orders/crearOrden"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="OrdenFault"><soap:fault name="OrdenFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="consultarOrden">
+            <soap:operation soapAction="http://camel.javacamel.com/orders/consultarOrden"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="OrdenFault"><soap:fault name="OrdenFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="actualizarOrden">
+            <soap:operation soapAction="http://camel.javacamel.com/orders/actualizarOrden"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="OrdenFault"><soap:fault name="OrdenFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="eliminarOrden">
+            <soap:operation soapAction="http://camel.javacamel.com/orders/eliminarOrden"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="OrdenFault"><soap:fault name="OrdenFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="listarOrdenesPorCliente">
+            <soap:operation soapAction="http://camel.javacamel.com/orders/listarOrdenesPorCliente"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="OrdenFault"><soap:fault name="OrdenFault" use="literal"/></fault>
+        </operation>
+
+    </binding>
+
+    <!-- ==================== SERVICE ==================== -->
+    <!-- Dirección ficticia (placeholder). No hay nada real escuchando en esta URL. -->
+    <service name="OrderService">
+        <port name="OrderServicePort" binding="tns:OrderServiceBinding">
+            <soap:address location="http://localhost:3030/soap/OrderService"/>
+        </port>
+    </service>
+
+</definitions>
