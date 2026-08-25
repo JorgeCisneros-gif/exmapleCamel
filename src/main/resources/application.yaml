@@ -44,6 +44,11 @@ spring:
 redis:
   host: localhost
   port: 6379
+  token:
+    # Key real donde se guarda/lee el token (usada por la ruta direct:redisGetToken)
+    key: camel:token
+    # Key usada por la ruta de prueba direct:testRedis (antes iba "camel:token1" fijo en el código)
+    test-key: camel:token1
 
 # Expone los endpoints "hawtio" y "jolokia" (JMX sobre HTTP) que usa la consola Hawtio.
 # Puerto dedicado (8081) para separar Actuator/Hawtio del puerto principal de la app (8080)

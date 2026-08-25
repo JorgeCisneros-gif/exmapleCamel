@@ -23,7 +23,7 @@ public class ProcessOrdenRoute extends RouteBuilder {
 
         rest("/api/ProcesOrder")
                 .produces("application/json")
-                .post("Order")
+                .post("order")
                 .type(Order.class)
                 .to("direct:orderManagment");
 
@@ -37,13 +37,21 @@ public class ProcessOrdenRoute extends RouteBuilder {
                 .body()
 
                 .log("CorrelationId=${exchangeProperty.correlationId} - Order recibido")
-                .log("Body antes de Redis = ${body}")
+                .log("Body antes de obtener token = ${body}")
 
-                .setBody(constant(null))
+                .to("direct:getToken")
 
-                .log("Body antes de testRedis = ${body}")
+                .setProperty("authToken")
+                .simple("${body.accessToken}")
 
-                .to("direct:testRedis");
+                .log("CorrelationId=${exchangeProperty.correlationId} - Token listo para usar: ${exchangeProperty.authToken}")
+
+                // Se restaura la orden original en el body. El envío real a ProcessOrden
+                // (con el header Authorization y su futura conversión a SOAP/WSDL) se
+                // implementa en el siguiente paso.
+                .setBody(exchangeProperty("originalOrder"))
+
+                .log("CorrelationId=${exchangeProperty.correlationId} - Orden lista para enviar a ProcessOrden (pendiente de implementar)");
 
 
     }
